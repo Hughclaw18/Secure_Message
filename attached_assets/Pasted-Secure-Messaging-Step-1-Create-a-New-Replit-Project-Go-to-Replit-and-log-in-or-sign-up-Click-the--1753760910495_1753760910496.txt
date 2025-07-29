@@ -1,0 +1,78 @@
+Secure Messaging
+Step 1: Create a New Replit Project
+Go to Replit and log in or sign up.
+
+Click the "Create Repl" button (usually a + icon).
+
+In the template selection, choose "Flask".
+
+Give your Repl a name (e.g., secure-messaging-app).
+
+Click "Create Repl".
+
+Step 2: Update main.py (or app.py) with your Flask Code
+Replit's Flask template usually creates a main.py or app.py file. You will replace its content with your secure_messaging_app.py code.
+
+In the file explorer on the left, click on main.py (or app.py).
+
+Delete all existing code in this file.
+
+Copy the entire content of your secure_messaging_app.py (the Python code I provided previously, including all imports, classes, functions, and routes).
+
+Paste it into main.py.
+
+Important Note for Replit: Replit typically runs main.py. Ensure your if __name__ == '__main__': block uses app.run(host='0.0.0.0', port=8080) to make it accessible from Replit's web view. Your current code uses app.run(debug=True), which is fine for development, but Replit will handle the host/port for you.
+
+Step 3: Create the templates Directory and HTML Files
+Your Flask application uses Jinja2 templates, which need to be in a specific directory.
+
+In the Replit file explorer, click the "Add file" button (or "New File" icon).
+
+Type templates/ and press Enter. This will create a new directory named templates.
+
+Now, inside the templates directory, create your HTML files:
+
+Click on the templates directory in the file explorer.
+
+Click "Add file" again.
+
+Type index.html and press Enter.
+
+Copy the content of the index.html immersive artifact I provided and paste it into this new index.html file.
+
+Repeat the process for login.html and register.html:
+
+Create templates/login.html and paste its content.
+
+Create templates/register.html and paste its content.
+
+Step 4: Install Dependencies
+Your application requires Flask and cryptography. Replit usually handles Flask automatically for the Flask template, but you'll need to explicitly add cryptography.
+
+In the Replit sidebar, click on the "Packages" icon (looks like a cube or puzzle piece).
+
+In the search bar, type cryptography and press Enter.
+
+Click the "Install" button next to cryptography.
+
+Alternatively, you can open the Shell tab at the bottom of the Replit interface and run:
+
+pip install cryptography
+
+Step 5: Run Your Application
+Click the large green "Run" button at the top of the Replit interface.
+
+Replit will start your Flask application. A web view will appear on the right side of the screen, showing your application.
+
+Step 6: Test Your Application
+Register: On the initial login page, click "Register here". Create a new username and password.
+
+Login: After successful registration, you'll be redirected to the login page. Log in with your new credentials.
+
+Send Messages: Once logged in, you can type messages, select a cipher (Fernet or XOR), and send them.
+
+View Messages: Your sent messages (and any others stored) will appear decrypted on the main page.
+
+Logout: Test the logout functionality.
+
+You now have a fully functional secure messaging application running on Replit!
