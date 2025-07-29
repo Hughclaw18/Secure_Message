@@ -1,6 +1,6 @@
 # Secure Messaging Application
 
-A comprehensive Flask-based secure messaging platform featuring user authentication, direct messaging, group conversations, encrypted file sharing, and admin management.
+A comprehensive Flask-based local messaging platform featuring user authentication, direct messaging, group conversations, encrypted file sharing, and admin management.
 
 ## Features
 
