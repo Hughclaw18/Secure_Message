@@ -110,9 +110,7 @@ The application will be available at `http://localhost:5000`
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Deployment
-
-### Replit
-This application is configured for easy deployment on Replit. Simply fork the project and run.
+Local
 
 ### Other Platforms
 Configure environment variables and ensure database connectivity for deployment on other platforms.
