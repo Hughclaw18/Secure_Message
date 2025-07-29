@@ -80,3 +80,49 @@ def decrypt_xor(encrypted_message):
         decrypted_bytes.append(byte ^ key_byte)
     
     return decrypted_bytes.decode('utf-8')
+
+def encrypt_file_content(file_content, cipher_type):
+    """
+    Encrypt file content using the specified cipher type.
+    
+    Args:
+        file_content (bytes): The file content to encrypt
+        cipher_type (str): Either 'fernet' or 'xor'
+    
+    Returns:
+        bytes: Encrypted file content
+    """
+    if cipher_type == 'fernet':
+        return fernet.encrypt(file_content)
+    elif cipher_type == 'xor':
+        key_bytes = XOR_KEY.encode('utf-8')
+        encrypted_bytes = bytearray()
+        for i, byte in enumerate(file_content):
+            key_byte = key_bytes[i % len(key_bytes)]
+            encrypted_bytes.append(byte ^ key_byte)
+        return bytes(encrypted_bytes)
+    else:
+        raise ValueError(f"Unsupported cipher type: {cipher_type}")
+
+def decrypt_file_content(encrypted_content, cipher_type):
+    """
+    Decrypt file content using the specified cipher type.
+    
+    Args:
+        encrypted_content (bytes): The encrypted file content
+        cipher_type (str): Either 'fernet' or 'xor'
+    
+    Returns:
+        bytes: Decrypted file content
+    """
+    if cipher_type == 'fernet':
+        return fernet.decrypt(encrypted_content)
+    elif cipher_type == 'xor':
+        key_bytes = XOR_KEY.encode('utf-8')
+        decrypted_bytes = bytearray()
+        for i, byte in enumerate(encrypted_content):
+            key_byte = key_bytes[i % len(key_bytes)]
+            decrypted_bytes.append(byte ^ key_byte)
+        return bytes(decrypted_bytes)
+    else:
+        raise ValueError(f"Unsupported cipher type: {cipher_type}")

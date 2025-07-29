@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Secure Messaging{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i data-feather="mail" class="me-2"></i>
+                Welcome, {{ user.username }}!
+                {% if user.is_admin %}
+                <span class="badge bg-warning ms-2">Admin</span>
+                {% endif %}
+            </h1>
+            <div>
+                <a href="{{ url_for('groups') }}" class="btn btn-outline-primary me-2">
+                    <i data-feather="users" class="me-1"></i>
+                    Groups
+                </a>
+                {% if user.is_admin %}
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-warning">
+                    <i data-feather="settings" class="me-1"></i>
+                    Admin Panel
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Direct Messaging Section -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="send" class="me-2"></i>
+                            Send Direct Message
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('send_direct_message') }}">
+                            <div class="mb-3">
+                                <label for="recipient_id" class="form-label">Recipient</label>
+                                <select class="form-select" id="recipient_id" name="recipient_id" required>
+                                    <option value="">Select a user...</option>
+                                    {% for other_user in other_users %}
+                                    <option value="{{ other_user.id }}">{{ other_user.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Message</label>
+                                <textarea class="form-control" id="content" name="content" rows="3" 
+                                        placeholder="Type your secure message here..." required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="cipher_type" class="form-label">Encryption Method</label>
+                                <select class="form-select" id="cipher_type" name="cipher_type" required>
+                                    <option value="fernet">Fernet (AES-based)</option>
+                                    <option value="xor">XOR Cipher</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="send" class="me-2"></i>
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="paperclip" class="me-2"></i>
+                            Send Encrypted File
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="file" class="form-label">File (Max 10MB)</label>
+                                <input type="file" class="form-control" id="file" name="file" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="file_recipient_id" class="form-label">Send to User</label>
+                                <select class="form-select" id="file_recipient_id" name="recipient_id">
+                                    <option value="">Select a user...</option>
+                                    {% for other_user in other_users %}
+                                    <option value="{{ other_user.id }}">{{ other_user.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="file_cipher_type" class="form-label">Encryption Method</label>
+                                <select class="form-select" id="file_cipher_type" name="cipher_type" required>
+                                    <option value="fernet">Fernet (AES-based)</option>
+                                    <option value="xor">XOR Cipher</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success">
+                                <i data-feather="upload" class="me-2"></i>
+                                Upload & Encrypt
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Recent Direct Messages -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="message-circle" class="me-2"></i>
+                            Recent Direct Messages
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if direct_messages %}
+                            {% for message in direct_messages %}
+                            <div class="border rounded p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <small class="text-muted">
+                                        <i data-feather="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        {{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </small>
+                                    <div>
+                                        <span class="badge bg-secondary me-1">
+                                            {{ message.cipher_type.upper() }}
+                                        </span>
+                                        {% if message.is_sent %}
+                                        <span class="badge bg-primary">Sent to {{ message.recipient.username }}</span>
+                                        {% else %}
+                                        <span class="badge bg-info">From {{ message.sender.username }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <p class="mb-0">{{ message.content }}</p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i data-feather="inbox" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                                <h6 class="text-muted">No direct messages yet</h6>
+                                <p class="text-muted mb-0">Send your first direct message using the form above.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Group Messages -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="users" class="me-2"></i>
+                            Recent Group Messages
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if group_messages %}
+                            {% for message in group_messages %}
+                            <div class="border rounded p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <small class="text-muted">
+                                        <i data-feather="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        {{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </small>
+                                    <div>
+                                        <span class="badge bg-secondary me-1">{{ message.cipher_type.upper() }}</span>
+                                        <span class="badge bg-success">{{ message.group.name }}</span>
+                                    </div>
+                                </div>
+                                <div class="mb-1">
+                                    <strong>{{ message.sender.username }}:</strong>
+                                </div>
+                                <p class="mb-0">{{ message.content }}</p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i data-feather="users" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                                <h6 class="text-muted">No group messages yet</h6>
+                                <p class="text-muted mb-0">Join a group to start receiving group messages.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add loading state to forms
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Processing...';
+            submitBtn.disabled = true;
+            
+            // Re-enable button after delay (in case of validation errors)
+            setTimeout(function() {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 3000);
+        });
+    });
+</script>
+{% endblock %}

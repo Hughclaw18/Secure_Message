@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} - Secure Messaging{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="users" class="me-2"></i>
+                        {{ group.name }}
+                    </h5>
+                    <div>
+                        <span class="badge bg-info">{{ user_role.title() }}</span>
+                        <a href="{{ url_for('groups') }}" class="btn btn-outline-secondary btn-sm ms-2">
+                            <i data-feather="arrow-left" class="me-1"></i>
+                            Back
+                        </a>
+                    </div>
+                </div>
+                {% if group.description %}
+                <p class="text-muted mb-0 mt-2">{{ group.description }}</p>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <!-- Send Message Form -->
+                <form method="POST" action="{{ url_for('send_group_message') }}" class="mb-4">
+                    <input type="hidden" name="group_id" value="{{ group.id }}">
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Send Message to Group</label>
+                        <textarea class="form-control" id="content" name="content" rows="3" 
+                                placeholder="Type your message to the group..." required></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="cipher_type" class="form-label">Encryption Method</label>
+                            <select class="form-select" id="cipher_type" name="cipher_type" required>
+                                <option value="fernet">Fernet (AES-based)</option>
+                                <option value="xor">XOR Cipher</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i data-feather="send" class="me-2"></i>
+                                Send to Group
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- File Upload for Group -->
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i data-feather="paperclip" class="me-2"></i>
+                            Share Encrypted File
+                        </h6>
+                        <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+                            <input type="hidden" name="group_id" value="{{ group.id }}">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <input type="file" class="form-control" name="file" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" name="cipher_type" required>
+                                        <option value="fernet">Fernet</option>
+                                        <option value="xor">XOR</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i data-feather="upload" class="me-1"></i>
+                                        Upload
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="message-square" class="me-2"></i>
+                    Group Messages
+                </h5>
+            </div>
+            <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong>{{ message.sender.username }}</strong>
+                                <small class="text-muted ms-2">
+                                    <i data-feather="clock" class="me-1" style="width: 12px; height: 12px;"></i>
+                                    {{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                                </small>
+                            </div>
+                            <span class="badge bg-secondary">{{ message.cipher_type.upper() }}</span>
+                        </div>
+                        <p class="mb-0">{{ message.content }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="message-circle" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                        <h6 class="text-muted">No messages yet</h6>
+                        <p class="text-muted mb-0">Be the first to send a message to this group!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Members -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="user-check" class="me-2"></i>
+                    Group Members
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for user_info, membership in members %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ user_info.username }}</strong>
+                        {% if user_info.id == group.created_by %}
+                        <i data-feather="crown" class="text-warning ms-1" style="width: 14px; height: 14px;" title="Group Creator"></i>
+                        {% endif %}
+                    </div>
+                    <span class="badge bg-{{ 'warning' if membership.role == 'admin' else 'info' }}">
+                        {{ membership.role.title() }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-scroll to bottom of messages
+    const messagesContainer = document.querySelector('.card-body[style*="overflow-y"]');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Add loading states
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Sending...';
+            submitBtn.disabled = true;
+            
+            setTimeout(function() {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 3000);
+        });
+    });
+</script>
+{% endblock %}

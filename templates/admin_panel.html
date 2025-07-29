@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Secure Messaging{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i data-feather="settings" class="me-2"></i>
+                Admin Panel
+            </h1>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                <i data-feather="arrow-left" class="me-1"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <i data-feather="users" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4 class="card-title">{{ stats.total_users }}</h4>
+                        <p class="card-text">Total Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <i data-feather="user-check" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4 class="card-title">{{ stats.active_users }}</h4>
+                        <p class="card-text">Active Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <i data-feather="users" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4 class="card-title">{{ stats.total_groups }}</h4>
+                        <p class="card-text">Total Groups</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <i data-feather="message-square" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4 class="card-title">{{ stats.total_messages }}</h4>
+                        <p class="card-text">Messages</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-secondary text-white">
+                    <div class="card-body text-center">
+                        <i data-feather="file" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4 class="card-title">{{ stats.total_files }}</h4>
+                        <p class="card-text">Files</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <i data-feather="activity" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <h4 class="card-title">{{ stats.active_groups }}</h4>
+                        <p class="card-text">Active Groups</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Recent Users -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i data-feather="user-plus" class="me-2"></i>
+                                Recent Users
+                            </h5>
+                            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary btn-sm">
+                                <i data-feather="list" class="me-1"></i>
+                                View All
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% for user in recent_users %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>{{ user.username }}</strong>
+                                {% if user.is_admin %}
+                                <span class="badge bg-warning ms-1">Admin</span>
+                                {% endif %}
+                                {% if not user.is_active %}
+                                <span class="badge bg-danger ms-1">Inactive</span>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">
+                                {{ user.created_at.strftime('%Y-%m-%d') }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="activity" class="me-2"></i>
+                            Recent Activity
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% for message in recent_messages %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>{{ message.sender.username }}</strong>
+                                {% if message.group_id %}
+                                <small class="text-muted">in {{ message.group.name }}</small>
+                                {% elif message.recipient_id %}
+                                <small class="text-muted">to {{ message.recipient.username }}</small>
+                                {% endif %}
+                                <span class="badge bg-secondary ms-1">{{ message.cipher_type.upper() }}</span>
+                            </div>
+                            <small class="text-muted">
+                                {{ message.timestamp.strftime('%m-%d %H:%M') }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="zap" class="me-2"></i>
+                            Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary w-100">
+                                    <i data-feather="users" class="me-2"></i>
+                                    Manage Users
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="{{ url_for('groups') }}" class="btn btn-outline-info w-100">
+                                    <i data-feather="users" class="me-2"></i>
+                                    View Groups
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-outline-warning w-100" onclick="showSystemInfo()">
+                                    <i data-feather="info" class="me-2"></i>
+                                    System Info
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-outline-success w-100" onclick="exportData()">
+                                    <i data-feather="download" class="me-2"></i>
+                                    Export Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Info Modal -->
+<div class="modal fade" id="systemInfoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">System Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Platform:</strong> Replit Secure Messaging Platform</p>
+                <p><strong>Version:</strong> 2.0.0</p>
+                <p><strong>Encryption:</strong> Fernet (AES) & XOR Cipher</p>
+                <p><strong>Database:</strong> SQLite with SQLAlchemy ORM</p>
+                <p><strong>Features:</strong> Direct messaging, Group chat, File encryption, Admin panel</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showSystemInfo() {
+        const modal = new bootstrap.Modal(document.getElementById('systemInfoModal'));
+        modal.show();
+    }
+
+    function exportData() {
+        alert('Data export feature would be implemented here in a production environment.');
+    }
+</script>
+{% endblock %}

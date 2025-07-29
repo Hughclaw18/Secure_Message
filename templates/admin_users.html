@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i data-feather="users" class="me-2"></i>
+                User Management
+            </h1>
+            <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-primary">
+                <i data-feather="arrow-left" class="me-1"></i>
+                Back to Admin Panel
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="list" class="me-2"></i>
+                    All Users
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                                <th>Created</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_item in users %}
+                            <tr class="{% if not user_item.is_active %}table-secondary{% endif %}">
+                                <td>
+                                    <strong>{{ user_item.username }}</strong>
+                                    {% if user_item.id == user.id %}
+                                    <span class="badge bg-info ms-1">You</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user_item.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user_item.is_admin %}
+                                    <span class="badge bg-warning">Admin</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">User</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ user_item.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if user_item.last_login %}
+                                    <small class="text-muted">
+                                        {{ user_item.last_login.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                    {% else %}
+                                    <small class="text-muted">Never</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user_item.id != user.id %}
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('admin_toggle_user', user_id=user_item.id) }}" 
+                                           class="btn btn-sm {% if user_item.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+                                           onclick="return confirm('Are you sure you want to {% if user_item.is_active %}deactivate{% else %}activate{% endif %} this user?')">
+                                            <i data-feather="{% if user_item.is_active %}user-x{% else %}user-check{% endif %}" 
+                                               style="width: 14px; height: 14px;"></i>
+                                            {% if user_item.is_active %}Deactivate{% else %}Activate{% endif %}
+                                        </a>
+                                        <a href="{{ url_for('admin_make_admin', user_id=user_item.id) }}" 
+                                           class="btn btn-sm {% if user_item.is_admin %}btn-outline-warning{% else %}btn-outline-primary{% endif %}"
+                                           onclick="return confirm('Are you sure you want to {% if user_item.is_admin %}revoke{% else %}grant{% endif %} admin privileges?')">
+                                            <i data-feather="{% if user_item.is_admin %}shield-off{% else %}shield{% endif %}" 
+                                               style="width: 14px; height: 14px;"></i>
+                                            {% if user_item.is_admin %}Revoke Admin{% else %}Make Admin{% endif %}
+                                        </a>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ users|selectattr('is_active')|list|length }}</h5>
+                        <p class="card-text text-success">Active Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ users|rejectattr('is_active')|list|length }}</h5>
+                        <p class="card-text text-danger">Inactive Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ users|selectattr('is_admin')|list|length }}</h5>
+                        <p class="card-text text-warning">Administrators</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ users|length }}</h5>
+                        <p class="card-text text-info">Total Users</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

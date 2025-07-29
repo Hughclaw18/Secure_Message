@@ -18,6 +18,20 @@
             
             {% if session.user_id %}
             <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i data-feather="home" class="me-1"></i>
+                    Dashboard
+                </a>
+                <a class="nav-link" href="{{ url_for('groups') }}">
+                    <i data-feather="users" class="me-1"></i>
+                    Groups
+                </a>
+                {% if session.get('is_admin') %}
+                <a class="nav-link" href="{{ url_for('admin_panel') }}">
+                    <i data-feather="settings" class="me-1"></i>
+                    Admin
+                </a>
+                {% endif %}
                 <a class="nav-link" href="{{ url_for('logout') }}">
                     <i data-feather="log-out" class="me-1"></i>
                     Logout

@@ -2,7 +2,20 @@
 
 ## Overview
 
-This is a Flask-based secure messaging application that allows users to register, login, and send encrypted messages to themselves. The application demonstrates different encryption methods (Fernet and XOR cipher) and provides a simple web interface for managing encrypted messages.
+This is a comprehensive Flask-based secure messaging platform featuring user authentication, direct messaging, group conversations, encrypted file sharing, and admin management. The application implements multiple encryption methods (Fernet and XOR cipher) with a modern, responsive web interface for secure communication.
+
+## Recent Changes (July 29, 2025)
+
+✓ Implemented direct user-to-user messaging with recipient selection
+✓ Added group messaging system with member management
+✓ Created encrypted file upload and sharing capabilities (10MB limit)
+✓ Built comprehensive admin panel with user management
+✓ Enhanced database schema with Groups, GroupMembership, EncryptedFile, and MessageFile models
+✓ Added admin privileges system with automatic first-user admin assignment
+✓ Created responsive dashboard with separate sections for direct and group messages
+✓ Implemented secure file access controls based on message permissions
+✓ Added navigation enhancements with admin panel access
+✓ Enhanced session management with admin status tracking
 
 ## User Preferences
 
