@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Secure Messaging{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4 class="card-title mb-0">
+                    <i data-feather="user-plus" class="me-2"></i>
+                    Create Account
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="registerForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i data-feather="user"></i>
+                            </span>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="Choose a username (min 3 chars)" required minlength="3">
+                        </div>
+                        <div class="form-text">Username must be at least 3 characters long.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i data-feather="lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Create a secure password (min 6 chars)" required minlength="6">
+                        </div>
+                        <div class="form-text">Password must be at least 6 characters long.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i data-feather="check-circle"></i>
+                            </span>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                   placeholder="Confirm your password" required>
+                        </div>
+                        <div id="passwordMismatch" class="form-text text-danger d-none">
+                            Passwords do not match.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i data-feather="user-plus" class="me-2"></i>
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center">
+                    <p class="text-muted mb-0">Already have an account?</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-sm mt-2">
+                        <i data-feather="log-in" class="me-1"></i>
+                        Login here
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i data-feather="shield" class="me-2"></i>
+                    Security Features
+                </h6>
+                <ul class="list-unstyled small text-muted mb-0">
+                    <li class="mb-1">
+                        <i data-feather="check" class="me-2 text-success" style="width: 14px; height: 14px;"></i>
+                        Secure password hashing with Werkzeug
+                    </li>
+                    <li class="mb-1">
+                        <i data-feather="check" class="me-2 text-success" style="width: 14px; height: 14px;"></i>
+                        Multiple encryption algorithms (Fernet & XOR)
+                    </li>
+                    <li class="mb-1">
+                        <i data-feather="check" class="me-2 text-success" style="width: 14px; height: 14px;"></i>
+                        Encrypted message storage
+                    </li>
+                    <li class="mb-0">
+                        <i data-feather="check" class="me-2 text-success" style="width: 14px; height: 14px;"></i>
+                        Session-based authentication
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Password confirmation validation
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const passwordMismatch = document.getElementById('passwordMismatch');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    function validatePasswords() {
+        if (confirmPassword.value && password.value !== confirmPassword.value) {
+            passwordMismatch.classList.remove('d-none');
+            confirmPassword.classList.add('is-invalid');
+            submitBtn.disabled = true;
+        } else {
+            passwordMismatch.classList.add('d-none');
+            confirmPassword.classList.remove('is-invalid');
+            if (confirmPassword.value) {
+                confirmPassword.classList.add('is-valid');
+            }
+            submitBtn.disabled = false;
+        }
+    }
+    
+    password.addEventListener('input', validatePasswords);
+    confirmPassword.addEventListener('input', validatePasswords);
+    
+    // Add loading state to registration form
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        if (password.value !== confirmPassword.value) {
+            e.preventDefault();
+            passwordMismatch.classList.remove('d-none');
+            return;
+        }
+        
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Creating account...';
+        submitBtn.disabled = true;
+        
+        // Re-enable button after a delay (in case of validation errors)
+        setTimeout(function() {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 3000);
+    });
+</script>
+{% endblock %}

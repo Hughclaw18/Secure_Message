@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Secure Messaging{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i data-feather="mail" class="me-2"></i>
+                Welcome, {{ user.username }}!
+            </h1>
+        </div>
+
+        <!-- Send Message Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="edit-3" class="me-2"></i>
+                    Send Secure Message
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('send_message') }}">
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Message Content</label>
+                        <textarea class="form-control" id="content" name="content" rows="3" 
+                                placeholder="Type your secure message here..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cipher_type" class="form-label">Encryption Method</label>
+                        <select class="form-select" id="cipher_type" name="cipher_type" required>
+                            <option value="fernet">Fernet (AES-based symmetric encryption)</option>
+                            <option value="xor">XOR Cipher (Simple bitwise encryption)</option>
+                        </select>
+                        <div class="form-text">
+                            Choose your preferred encryption method. Fernet provides stronger security.
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="send" class="me-2"></i>
+                        Send Encrypted Message
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Message History -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="archive" class="me-2"></i>
+                    Message History
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <small class="text-muted">
+                                <i data-feather="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                {{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </small>
+                            <span class="badge bg-secondary">
+                                <i data-feather="{% if message.cipher_type == 'fernet' %}shield{% else %}layers{% endif %}" 
+                                   class="me-1" style="width: 12px; height: 12px;"></i>
+                                {{ message.cipher_type.upper() }}
+                            </span>
+                        </div>
+                        <p class="mb-0">{{ message.content }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="inbox" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                        <h6 class="text-muted">No messages yet</h6>
+                        <p class="text-muted mb-0">Send your first secure message using the form above.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add some visual feedback for form submission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Encrypting...';
+        submitBtn.disabled = true;
+        
+        // Re-enable button after a delay (in case of validation errors)
+        setTimeout(function() {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 3000);
+    });
+</script>
+{% endblock %}
