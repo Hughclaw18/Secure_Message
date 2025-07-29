@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Encrypted Messages - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">
+                <i data-feather="lock" class="me-2"></i>
+                Encrypted Message Analysis
+            </h1>
+            <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-primary">
+                <i data-feather="arrow-left" class="me-1"></i>
+                Back to Admin Panel
+            </a>
+        </div>
+
+        <!-- Security Warning -->
+        <div class="alert alert-warning" role="alert">
+            <i data-feather="shield" class="me-2"></i>
+            <strong>Security Notice:</strong> This panel shows encrypted message data for administrative purposes only. 
+            Handle this information responsibly and ensure compliance with privacy policies.
+        </div>
+
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ encrypted_data|length }}</h5>
+                        <p class="card-text">Total Messages</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ encrypted_data|selectattr('cipher_type', 'equalto', 'fernet')|list|length }}</h5>
+                        <p class="card-text">Fernet Encrypted</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ encrypted_data|selectattr('cipher_type', 'equalto', 'xor')|list|length }}</h5>
+                        <p class="card-text">XOR Encrypted</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ encrypted_data|selectattr('message_type', 'equalto', 'file')|list|length }}</h5>
+                        <p class="card-text">File Messages</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i data-feather="database" class="me-2"></i>
+                    Encrypted Message Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Timestamp</th>
+                                <th>Sender</th>
+                                <th>Recipient/Group</th>
+                                <th>Cipher</th>
+                                <th>Type</th>
+                                <th>Encrypted Data</th>
+                                <th>Decrypted Preview</th>
+                                <th>Size</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in encrypted_data %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-secondary">#{{ data.id }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ data.timestamp.strftime('%m-%d %H:%M') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <strong>{{ data.sender.username }}</strong>
+                                </td>
+                                <td>
+                                    {% if data.recipient %}
+                                    <span class="badge bg-info">{{ data.recipient.username }}</span>
+                                    {% elif data.group %}
+                                    <span class="badge bg-success">{{ data.group.name }}</span>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if data.cipher_type == 'fernet' %}primary{% else %}warning{% endif %}">
+                                        {{ data.cipher_type.upper() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if data.message_type == 'file' %}danger{% else %}secondary{% endif %}">
+                                        {{ data.message_type.upper() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-dark btn-sm" 
+                                            onclick="showEncryptedData('{{ data.id }}', '{{ data.encrypted_content|e }}', '{{ data.cipher_type }}')">
+                                        <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                        View Raw
+                                    </button>
+                                </td>
+                                <td>
+                                    <span class="text-muted small" style="max-width: 200px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        {{ data.decrypted_content[:50] }}{% if data.decrypted_content|length > 50 %}...{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ data.content_length }}b
+                                        {% if data.original_length > 0 %}
+                                        <br><span class="text-success">({{ data.original_length }}b orig)</span>
+                                        {% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Encrypted Data Modal -->
+<div class="modal fade" id="encryptedDataModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="lock" class="me-2"></i>
+                    Encrypted Message Data
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Message ID:</strong></label>
+                    <span id="messageId" class="form-control-plaintext"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Encryption Method:</strong></label>
+                    <span id="cipherType" class="form-control-plaintext"></span>
+                </div>
+                <div class="mb-3">
+                    <label for="encryptedContent" class="form-label"><strong>Raw Encrypted Data:</strong></label>
+                    <textarea id="encryptedContent" class="form-control font-monospace" rows="8" readonly style="font-size: 12px; background-color: #f8f9fa;"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Data Analysis:</strong></label>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small class="text-muted">Length: <span id="dataLength"></span> bytes</small>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Base64 Format: <span id="isBase64"></span></small>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">First 16 bytes: <span id="dataPreview" class="font-monospace"></span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="copyToClipboard()">
+                    <i data-feather="copy" class="me-1"></i>
+                    Copy Data
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showEncryptedData(messageId, encryptedContent, cipherType) {
+        document.getElementById('messageId').textContent = messageId;
+        document.getElementById('cipherType').textContent = cipherType.toUpperCase();
+        document.getElementById('encryptedContent').value = encryptedContent;
+        document.getElementById('dataLength').textContent = encryptedContent.length;
+        
+        // Check if it's valid base64
+        try {
+            atob(encryptedContent);
+            document.getElementById('isBase64').textContent = 'Yes';
+        } catch (e) {
+            document.getElementById('isBase64').textContent = 'No';
+        }
+        
+        // Show first 16 characters as hex preview
+        const preview = encryptedContent.substring(0, 32);
+        document.getElementById('dataPreview').textContent = preview + (encryptedContent.length > 32 ? '...' : '');
+        
+        const modal = new bootstrap.Modal(document.getElementById('encryptedDataModal'));
+        modal.show();
+    }
+    
+    function copyToClipboard() {
+        const content = document.getElementById('encryptedContent');
+        content.select();
+        document.execCommand('copy');
+        
+        // Show temporary success message
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i data-feather="check" class="me-1"></i>Copied!';
+        button.classList.remove('btn-secondary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-secondary');
+            feather.replace();
+        }, 2000);
+    }
+    
+    // Auto-refresh every 30 seconds
+    setTimeout(() => {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

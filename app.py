@@ -663,6 +663,57 @@ def admin_make_admin(user_id):
     flash(f'Admin privileges {status} for {target_user.username}.', 'success')
     return redirect(url_for('admin_users'))
 
+@app.route('/admin/encrypted_messages')
+def admin_encrypted_messages():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    if not user or not user.is_admin:
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('index'))
+    
+    # Get recent messages with their encrypted format
+    messages = Message.query.order_by(Message.timestamp.desc()).limit(50).all()
+    
+    encrypted_data = []
+    for message in messages:
+        try:
+            # Get decrypted content for comparison
+            decrypted_content = decrypt_message(message.encrypted_content, message.cipher_type)
+            
+            encrypted_data.append({
+                'id': message.id,
+                'sender': message.sender,
+                'recipient': message.recipient,
+                'group': message.group,
+                'encrypted_content': message.encrypted_content,
+                'decrypted_content': decrypted_content,
+                'cipher_type': message.cipher_type,
+                'message_type': message.message_type,
+                'timestamp': message.timestamp,
+                'content_length': len(message.encrypted_content),
+                'original_length': len(decrypted_content)
+            })
+        except Exception as e:
+            encrypted_data.append({
+                'id': message.id,
+                'sender': message.sender,
+                'recipient': message.recipient,
+                'group': message.group,
+                'encrypted_content': message.encrypted_content,
+                'decrypted_content': f'[Decryption Error: {str(e)}]',
+                'cipher_type': message.cipher_type,
+                'message_type': message.message_type,
+                'timestamp': message.timestamp,
+                'content_length': len(message.encrypted_content),
+                'original_length': 0
+            })
+    
+    return render_template('admin_encrypted_messages.html', 
+                         user=user, 
+                         encrypted_data=encrypted_data)
+
 @app.route('/logout')
 def logout():
     session.clear()

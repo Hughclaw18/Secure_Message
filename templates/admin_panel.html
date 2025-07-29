@@ -161,6 +161,12 @@
                                 </a>
                             </div>
                             <div class="col-md-3 mb-3">
+                                <a href="{{ url_for('admin_encrypted_messages') }}" class="btn btn-outline-danger w-100">
+                                    <i data-feather="lock" class="me-2"></i>
+                                    Encrypted Data
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
                                 <a href="{{ url_for('groups') }}" class="btn btn-outline-info w-100">
                                     <i data-feather="users" class="me-2"></i>
                                     View Groups
@@ -170,12 +176,6 @@
                                 <button class="btn btn-outline-warning w-100" onclick="showSystemInfo()">
                                     <i data-feather="info" class="me-2"></i>
                                     System Info
-                                </button>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <button class="btn btn-outline-success w-100" onclick="exportData()">
-                                    <i data-feather="download" class="me-2"></i>
-                                    Export Data
                                 </button>
                             </div>
                         </div>

@@ -10,10 +10,16 @@
                 <i data-feather="users" class="me-2"></i>
                 User Management
             </h1>
-            <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-primary">
-                <i data-feather="arrow-left" class="me-1"></i>
-                Back to Admin Panel
-            </a>
+            <div>
+                <a href="{{ url_for('admin_encrypted_messages') }}" class="btn btn-outline-danger me-2">
+                    <i data-feather="lock" class="me-1"></i>
+                    View Encrypted Data
+                </a>
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-primary">
+                    <i data-feather="arrow-left" class="me-1"></i>
+                    Back to Admin Panel
+                </a>
+            </div>
         </div>
 
         <div class="card">
